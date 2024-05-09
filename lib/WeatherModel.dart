@@ -1,12 +1,15 @@
 class WeatherModel{
-  String wAtmosphere = "--";
+  String wAtmosphereMain = "--";
+  String wAtmosphereDescription = "--";
   double wTemp = 0.00;
   String wLocation = "--";
+  String? wIcon ;
 
-  WeatherModel();
 
   WeatherModel.fromJson(Map<String, dynamic> jsonData) :
-      wAtmosphere = jsonData["weather"][0]["description"] as String,
+      wAtmosphereMain = jsonData["weather"][0]["main"] as String,
+      wAtmosphereDescription = jsonData["weather"][0]["description"] as String,
       wTemp = jsonData["main"]["temp"] as double,
-      wLocation = jsonData["name"] as String;
+      wLocation = jsonData["name"] as String,
+      wIcon = jsonData["weather"][0]["icon"];
 }
