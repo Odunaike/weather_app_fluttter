@@ -22,8 +22,8 @@ class _WeatherScreenState extends State<WeatherScreen> {
 
   @override
   void initState() {
-    NetworkHelper networkHelper = NetworkHelper(url);
-    weatherData = networkHelper.fetchWeatherMap();
+    NetworkHelper networkHelper = NetworkHelper();
+    weatherData = networkHelper.fetchWeatherMapByGeo();
     initializeDateFormatting();
     date = DateFormat.yMMMMEEEEd("en").format(DateTime.now());
     super.initState();
