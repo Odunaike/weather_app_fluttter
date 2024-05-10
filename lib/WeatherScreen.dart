@@ -10,6 +10,9 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'api_string.dart';
 import 'network/network_call.dart';
 
+late Future<WeatherModel> weatherData;
+late NetworkHelper networkHelper;
+
 class WeatherScreen extends StatefulWidget {
   const WeatherScreen({super.key});
   @override
@@ -17,12 +20,12 @@ class WeatherScreen extends StatefulWidget {
 }
 
 class _WeatherScreenState extends State<WeatherScreen> {
-  late Future<WeatherModel> weatherData;
+
   late String date;
 
   @override
   void initState() {
-    NetworkHelper networkHelper = NetworkHelper();
+    networkHelper = NetworkHelper();
     weatherData = networkHelper.fetchWeatherMapByGeo();
     initializeDateFormatting();
     date = DateFormat.yMMMMEEEEd("en").format(DateTime.now());
@@ -42,7 +45,7 @@ class _WeatherScreenState extends State<WeatherScreen> {
                   Center(
                       child: Container(
                         width: 330,
-                        height: 700,
+                        height: 750,
                         decoration: BoxDecoration(
                           //color: Colors.white.withOpacity(0.7),
                             borderRadius: BorderRadius.circular(30)
@@ -59,6 +62,11 @@ class _WeatherScreenState extends State<WeatherScreen> {
                               temp: snapshot.data?.wTemp ?? 0.0,
                               icon: snapshot.data?.wIcon,
                               date: date,
+                              requestByLocation: (value){
+                                setState(() {
+                                  weatherData = networkHelper.fetchWeatherMapByLoc(value);
+                                });
+                              },
                             ),
                           ),
                         ),
@@ -108,13 +116,15 @@ class SpecialBackGround extends StatelessWidget {
   }
 }
 
-class WeatherDataDisplay extends StatelessWidget {
+//I had to dlete the old widget to make it stateful as it is now since we would want to change the state of weatherModel when a search query is made
+class WeatherDataDisplay extends StatefulWidget {
   final String location;
   final String atmosphereMain;
   final String atmosphereDescription;
   final String? icon;
   final double temp;
   final String date;
+  void Function(String) requestByLocation;
   WeatherDataDisplay({
     required this.location,
     required this.atmosphereMain,
@@ -122,29 +132,72 @@ class WeatherDataDisplay extends StatelessWidget {
     required this.temp,
     required this.icon,
     required this.date,
+    required this.requestByLocation,
     super.key});
+
+  @override
+  State<WeatherDataDisplay> createState() => _WeatherDataDisplayState();
+}
+
+class _WeatherDataDisplayState extends State<WeatherDataDisplay> {
+
+  String location = "";
 
   @override
   Widget build(BuildContext context) {
     return  Column(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(10),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.5), // shadow color
+                spreadRadius: 2, // spread radius
+                blurRadius: 10, // blur radius
+                offset: Offset(0, 3), // changes position of shadow
+              ),
+            ],
+          ),
+          child: Container(
+            width: 300,
+            child: TextField(
+              decoration: InputDecoration(
+                  hintText: "Search by location",
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 5),
+                  suffixIcon: IconButton(
+                    icon: Icon(Icons.search),
+                    onPressed: (){
+                      widget.requestByLocation(location);
+                      location = "";
+                    },
+                  )
+              ),
+              onChanged: (value){
+                location = value;
+              },
+            ),
+          ),
+        ),
         Column(
           children: [
-            Text(location, style: TextStyle(fontSize: 30, color: Colors.indigo)),
-            Text(date , style: TextStyle(fontSize: 15, color: Colors.indigo),)
+            Text(widget.location, style: TextStyle(fontSize: 30, color: Colors.indigo)),
+            Text(widget.date , style: TextStyle(fontSize: 15, color: Colors.indigo),)
           ],
         ),
-        Image.network(iconUrl + icon! + ".png",
-          width: 300,
-          height: 300,
-          fit: BoxFit.fill
+        Image.network(iconUrl + widget.icon! + ".png",
+            width: 300,
+            height: 300,
+            fit: BoxFit.fill
         ),
-        Text( (temp.toInt() - 273).toString() + "°" , style: TextStyle(fontSize: 100,color: Colors.indigo)),
+        Text( (widget.temp.toInt() - 273).toString() + "°" , style: TextStyle(fontSize: 100,color: Colors.indigo)),
         Column(
             children: [
-              Text(atmosphereMain, style: TextStyle(fontSize: 30, color: Colors.indigo),),
-              Text(atmosphereDescription , style: TextStyle(fontSize: 18, color: Colors.indigo),)
+              Text(widget.atmosphereMain, style: TextStyle(fontSize: 30, color: Colors.indigo),),
+              Text(widget.atmosphereDescription , style: TextStyle(fontSize: 18, color: Colors.indigo),)
             ]
         )
       ],

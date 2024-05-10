@@ -25,8 +25,8 @@ class NetworkHelper{
     }
   }
   Future<WeatherModel> fetchWeatherMapByLoc(String location) async{
-    String geoLocationUrl = "https://api.openweathermap.org/data/2.5/weather?q=$location&appid=$openweather_api_key";
-    http.Response response = await http.get(Uri.parse(geoLocationUrl));
+    String locationUrl = "https://api.openweathermap.org/data/2.5/weather?q=$location&appid=$openweather_api_key";
+    http.Response response = await http.get(Uri.parse(locationUrl));
     if(response.statusCode == 200){
       return WeatherModel.fromJson(jsonDecode(response.body));
     }else{
